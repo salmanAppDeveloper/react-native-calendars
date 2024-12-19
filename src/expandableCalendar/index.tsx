@@ -384,21 +384,22 @@ const ExpandableCalendar = (props: ExpandableCalendarProps) => {
       _height.current = toValue || newValue;
       _isOpen = _height.current >= threshold; // re-check after _height.current was set
 
-      resetWeekCalendarOpacity(_isOpen);
       Animated.spring(deltaY, {
         toValue: _height.current,
         speed: SPEED,
         bounciness: BOUNCINESS,
         useNativeDriver: false
-      }).start(() => {
-        onCalendarToggled?.(_isOpen);
-        setPosition(() => _height.current === closedHeight ? Positions.CLOSED : Positions.OPEN);
-      });
+      }).start();
+
+      onCalendarToggled?.(_isOpen);
+
+      setPosition(() => _height.current === closedHeight ? Positions.CLOSED : Positions.OPEN);
       closeHeader(_isOpen);
+      resetWeekCalendarOpacity(_isOpen);
     }
   };
 
-  const resetWeekCalendarOpacity = async (isOpen: boolean) => {
+  const resetWeekCalendarOpacity = (isOpen: boolean) => {
     _weekCalendarStyles.style.opacity = isOpen ? 0 : 1;
     updateNativeStyles();
   };

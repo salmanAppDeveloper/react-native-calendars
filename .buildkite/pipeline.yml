@@ -27,9 +27,9 @@ steps:
   - label: "Build"
     command: |
       nvm install
-      yarn
-      yarn test
-      yarn build:ts
+      npm install
+      npm run test
+      npm run build:ts
       if [[ $BUILDKITE_PULL_REQUEST == 'false' ]];then
-        yarn release
+        npm run release
       fi
