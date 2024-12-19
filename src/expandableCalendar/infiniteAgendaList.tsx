@@ -149,19 +149,10 @@ const InfiniteAgendaList = ({
 
   const layoutProvider = useMemo(
     () => new LayoutProvider(
-      (index) => dataRef.current[index]?.isTitle ? 'title': dataRef.current[index]?.itemCustomHeightType ?? 'page',
+      (index) => dataRef.current[index]?.isTitle ? 'title': 'page',
       (type, dim) => {
         dim.width = constants.screenWidth;
-        switch (type) {
-          case 'title':
-            dim.height = infiniteListProps?.titleHeight ?? 60;
-            break;
-          case 'page':
-            dim.height = infiniteListProps?.itemHeight ?? 80;
-            break;
-          default:
-            dim.height = infiniteListProps?.itemHeightByType?.[type] ?? infiniteListProps?.itemHeight ?? 80;
-        }
+        dim.height = type === 'title' ? infiniteListProps?.titleHeight ?? 60 : infiniteListProps?.itemHeight ?? 80;
       }
     ),
     []
