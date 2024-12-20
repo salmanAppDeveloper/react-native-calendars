@@ -60,6 +60,8 @@ type State = {
   firstReservationLoad: boolean;
   selectedDay: XDate;
   topDay: XDate;
+  zIndex:number;
+
 };
 
 /**
@@ -118,7 +120,9 @@ export default class Agenda extends Component<AgendaProps, State> {
       calendarScrollable: false,
       firstReservationLoad: false,
       selectedDay: this.getSelectedDate(props.selected),
-      topDay: this.getSelectedDate(props.selected)
+      topDay: this.getSelectedDate(props.selected),
+      zIndex:0
+
     };
 
     this.currentMonth = this.state.selectedDay.clone();
@@ -288,6 +292,7 @@ export default class Agenda extends Component<AgendaProps, State> {
   };
 
   onStartDrag = () => {
+    this.setState({zIndex:10});
     this.headerState = 'dragged';
     this.knobTracker.reset();
   };
@@ -303,6 +308,12 @@ export default class Agenda extends Component<AgendaProps, State> {
     this.setScrollPadPosition(snapY, true);
 
     this.enableCalendarScrolling(snapY === 0);
+    //from repo
+     if(snapY === 0){
+      this.setState({zIndex:10})   ;
+    }else{
+      this.setState({zIndex:0})   ;
+    }
   };
 
   onVisibleMonthsChange = (months: DateData[]) => {
@@ -458,7 +469,7 @@ export default class Agenda extends Component<AgendaProps, State> {
     };
 
     return (
-      <View testID={testID} onLayout={this.onLayout} style={[style, this.style.container]}>
+      <View testID={testID} onLayout={this.onLayout} style={[style, this.style.container ,{zIndex:this.state. zIndex}]}>
         <View style={this.style.reservations}>{this.renderReservations()}</View>
         <Animated.View style={headerStyle}>
           <Animated.View style={[this.style.animatedContainer, {transform: [{translateY: contentTranslate}]}]}>
