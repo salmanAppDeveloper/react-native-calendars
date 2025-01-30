@@ -482,6 +482,7 @@ export default class Agenda extends Component<AgendaProps, State> {
           {this.renderWeekDaysNames()}
         </Animated.View>
         <Animated.ScrollView
+          nestedScrollEnabled={true}
           ref={this.scrollPad}
           style={[this.style.scrollPadStyle, scrollPadStyle]}
           overScrollMode="never"
