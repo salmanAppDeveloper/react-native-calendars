@@ -13,7 +13,8 @@ import {
   ViewStyle,
   AccessibilityActionEvent,
   ColorValue,
-  Insets
+  Insets,
+  ViewProps
 } from 'react-native';
 import {formatNumbers, weekDayNames} from '../../dateutils';
 import styleConstructor from './style';
@@ -56,7 +57,7 @@ export interface CalendarHeaderProps {
   /** Apply custom disable color to selected day names indexes */
   disabledDaysIndexes?: number[];
   /** Replace default title with custom one. the function receive a date as parameter */
-  renderHeader?: (date?: XDate) => ReactNode; //TODO: replace with string
+  renderHeader?: (date?: XDate, info?: Pick<CalendarHeaderProps, 'testID'>) => ReactNode; //TODO: replace with string
   /** Replace default title with custom element */
   customHeaderTitle?: JSX.Element;
   /** Test ID */
@@ -73,6 +74,8 @@ export interface CalendarHeaderProps {
   numberOfDays?: number;
   /** Left inset for the timeline calendar header. Default = 72 */
   timelineLeftInset?: number;
+  /** Callback for header onLayout */
+  onHeaderLayout?: ViewProps['onLayout'];
 }
 
 const accessibilityActions = [
@@ -86,7 +89,7 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
     style: propsStyle,
     addMonth: propsAddMonth,
     month,
-    monthFormat,
+    monthFormat = 'MMMM yyyy',
     firstDay,
     hideDayNames,
     showWeekNumbers,
@@ -101,13 +104,14 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
     displayLoadingIndicator,
     customHeaderTitle,
     renderHeader,
-    webAriaLevel,
+    webAriaLevel = 1,
     testID,
     accessibilityElementsHidden,
     importantForAccessibility,
     numberOfDays,
     current = '',
-    timelineLeftInset
+    timelineLeftInset,
+    onHeaderLayout
   } = props;
   
   const numberOfDaysCondition = useMemo(() => {
@@ -189,7 +193,7 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
       }
 
       return (
-        <Text allowFontScaling={false} key={index} style={dayStyle} numberOfLines={1} accessibilityLabel={''}>
+        <Text allowFontScaling={false} key={index} style={dayStyle} numberOfLines={1} accessibilityLabel={''} testID={`${testID}.dayName_${day}`}>
           {day}
         </Text>
       );
@@ -200,7 +204,7 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
     const webProps = Platform.OS === 'web' ? {'aria-level': webAriaLevel} : {};
 
     if (renderHeader) {
-      return renderHeader(month);
+      return renderHeader(month, {testID});
     }
 
     if (customHeaderTitle) {
@@ -227,11 +231,11 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
     }
 
     const isLeft = direction === 'left';
-    const arrowId = isLeft ? 'leftArrow' : 'rightArrow';
+    const arrowDirection = isLeft ? 'left' : 'right';   
+    const arrowId = `${arrowDirection}Arrow`;
     const shouldDisable = isLeft ? disableArrowLeft : disableArrowRight;
     const onPress = !shouldDisable ? isLeft ? onPressLeft : onPressRight : undefined;
     const imageSource = isLeft ? require('../img/previous.png') : require('../img/next.png');
-    const renderArrowDirection = isLeft ? 'left' : 'right';   
       
     return (
       <TouchableOpacity
@@ -240,12 +244,9 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
         style={style.current.arrow}
         hitSlop={hitSlop}
         testID={`${testID}.${arrowId}`}
+        importantForAccessibility={'no-hide-descendants'}
       >
-        {renderArrow ? (
-          renderArrow(renderArrowDirection)
-        ) : (
-          <Image source={imageSource} style={shouldDisable ? style.current.disabledArrowImage : style.current.arrowImage}/>
-        )}
+        {renderArrow ? renderArrow(arrowDirection) : <Image source={imageSource} style={shouldDisable ? style.current.disabledArrowImage : style.current.arrowImage}/>}
       </TouchableOpacity>
     );
   };
@@ -262,7 +263,7 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
   };
 
   const renderWeekNumbersSpace = () => {
-    return showWeekNumbers && <View style={style.current.dayHeader} />;
+    return showWeekNumbers && <View style={style.current.dayHeader}/>;
   };
 
   const renderDayNames = () => {
@@ -271,6 +272,7 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
         <View
           style={dayNamesStyle}
           testID={`${testID}.dayNames`}
+          importantForAccessibility={'no-hide-descendants'}
         >
           {renderWeekNumbersSpace()}
           {renderWeekDays}
@@ -289,10 +291,11 @@ const CalendarHeader = forwardRef((props: CalendarHeaderProps, ref) => {
       onAccessibilityAction={onAccessibilityAction}
       accessibilityElementsHidden={accessibilityElementsHidden} // iOS
       importantForAccessibility={importantForAccessibility} // Android
+      onLayout={onHeaderLayout}
     >
       <View style={headerStyle}>
         {_renderArrow('left')}
-        <View style={style.current.headerContainer}>
+        <View style={style.current.headerContainer} importantForAccessibility={'no-hide-descendants'}>
           {_renderHeader()}
           {renderIndicator()}
         </View>
